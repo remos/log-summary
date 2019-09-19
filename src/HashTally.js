@@ -23,11 +23,23 @@ export default class HashTally {
     }
 
     decrement(key, count=1) {
+        if(!(key in this.map)) {
+            return;
+        }
+
         this.increment(key, -count);
+        
+        if(this.map[key] <= 0) {
+            delete this.map[key];
+        }
     }
 
     top(count) {
         return getTop(this.map, count);
+    }
+
+    count(key) {
+        return this.map[key] || 0;
     }
 
     countKeys() {
