@@ -5,10 +5,17 @@ import LogSummary, {
 import {Readable} from 'stream';
 
 describe('extractIpAndUrlFromLog', ()=>{
-    const testEntry = '50.112.00.11 - admin [11/Jul/2018:17:33:01 +0200] "GET /asset.css HTTP/1.1" 200 3574 "-" "Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/536.6 (KHTML, like Gecko) Chrome/20.0.1092.0 Safari/536.6"';
+    it('extracts correctly with no spaces in url', ()=>{
+        expect(extractIpAndUrlFromLog(
+            '50.112.00.11 - admin [11/Jul/2018:17:33:01 +0200] "GET /asset.css HTTP/1.1" 200 3574 "-" "Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/536.6 (KHTML, like Gecko) Chrome/20.0.1092.0 Safari/536.6"'
+        )).toStrictEqual(['50.112.00.11', '/asset.css']);
+    });
 
-    it('extracts correct', ()=>{
-        expect(extractIpAndUrlFromLog(testEntry)).toStrictEqual(['50.112.00.11', '/asset.css']);
+    // Despite possibly being an invalid log entry
+    it('extracts correctly with spaces in url', ()=>{
+        expect(extractIpAndUrlFromLog(
+            '50.112.00.10 - admin [11/Jul/2018:17:33:01 +0200] "GET /this is invalid, and yet HTTP/1.1" 200 3574 "-" "Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/536.6 (KHTML, like Gecko) Chrome/20.0.1092.0 Safari/536.6"'
+        )).toStrictEqual(['50.112.00.10', '/this is invalid, and yet']);
     });
 });
 

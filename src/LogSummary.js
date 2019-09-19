@@ -3,8 +3,11 @@ import readline from 'readline';
 import HashTally from './HashTally';
 
 export function extractIpAndUrlFromLog(log) {
+    /*
     const split = log.split(' ', 7);
     return [split[0], split[6]];
+    */
+    return log.match(/([^\s]+) .+? "[^\s]+ (.+?) [^\s]+"/).slice(1, 3);
 }
 
 export default class LogSummary {
@@ -51,8 +54,8 @@ export default class LogSummary {
 
         return {
             uniqueIpCount: ipAddresses.countKeys(),
-            top3Urls: urls.top(3),
-            top3IpAddresses: ipAddresses.top(3)
+            top3IpAddresses: ipAddresses.top(3),
+            top3Urls: urls.top(3)
         };
     }
 }
