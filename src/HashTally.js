@@ -1,12 +1,12 @@
-export const fallbackComparitor=(...comparitors)=>(a, b)=>(
-    comparitors.reduce((comparison, comparitor)=>(
-        comparison == 0 ? comparitor(a, b) : comparison
+export const fallbackComparator=(...comparators)=>(a, b)=>(
+    comparators.reduce((comparison, comparator)=>(
+        comparison == 0 ? comparator(a, b) : comparison
     ), 0)
 );
 
 export function getTop(map, count) {
     return Object.keys(map)
-        .sort(fallbackComparitor(
+        .sort(fallbackComparator(
             (a, b)=>map[b] - map[a],
             (a, b)=>a - b
         ))
