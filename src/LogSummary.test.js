@@ -1,8 +1,11 @@
 import LogSummary, {
     extractIpAndUrlFromLog,
+    __RewireAPI__ as RewireAPI
 } from './LogSummary';
 
 import {Readable} from 'stream';
+
+import sinon from 'sinon';
 
 describe('extractIpAndUrlFromLog', ()=>{
     it('extracts correctly with no spaces in url', ()=>{
@@ -45,12 +48,14 @@ describe('LogSummary', ()=>{
             '50.112.00.11 - admin [11/Jul/2018:17:31:05 +0200] "GET /hosting/ HTTP/1.1" 200 3574 "-" "Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/536.6 (KHTML, like Gecko) Chrome/20.0.1092.0 Safari/536.6"',
             '72.44.32.10 - - [09/Jul/2018:15:48:20 +0200] "GET /download/counter/ HTTP/1.1" 200 3574 "-" "Mozilla/5.0 (X11; U; Linux x86; en-US) AppleWebKit/534.7 (KHTML, like Gecko) Epiphany/2.30.6 Safari/534.7"',
             '50.112.00.11 - admin [11/Jul/2018:17:33:01 +0200] "GET /asset.css HTTP/1.1" 200 3574 "-" "Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/536.6 (KHTML, like Gecko) Chrome/20.0.1092.0 Safari/536.6"',
-        ]
+        ];
 
         const stream = new Readable();
         stream._read = ()=>{};
 
-        testEntries.forEach((line)=>{stream.push(line + "\n")});
+        testEntries.forEach((line)=>{
+            stream.push(line + "\n");
+        });
         stream.push(null);
 
         const summary = new LogSummary(stream);
@@ -69,5 +74,93 @@ describe('LogSummary', ()=>{
                     '/this/page/does/not/exist/'
                 ],
             });
+    });
+
+    it('generates expected summary', async ()=>{
+        class StubbedLogSummary extends LogSummary {
+            constructor(parsed) {
+                const stream = new Readable();
+                stream._read = ()=>{};
+                super(stream);
+
+                this.parsed = parsed;
+            }
+
+            async parse() {
+                return this.parsed;
+            }
+        }
+
+        const parsed = {
+            ipAddresses: {
+                countKeys: sinon.fake.returns(10),
+                top: sinon.fake.returns(['a', 'b', 'c'])
+            },
+
+            urls: {
+                top: sinon.fake.returns(['q', 'r', 's'])
+            }
+        };
+
+        const summary = new StubbedLogSummary(parsed);
+        expect(await summary.summarize()).toStrictEqual({
+            uniqueIpCount: 10,
+            top3IpAddresses: ['a', 'b', 'c'],
+            top3Urls: ['q', 'r', 's'],
+        });
+
+        expect(parsed.ipAddresses.countKeys.calledOnce).toBeTruthy();
+        expect(parsed.ipAddresses.top.calledOnceWith(3)).toBeTruthy();
+        expect(parsed.urls.top.calledOnceWith(3)).toBeTruthy();
+    });
+
+    it('throws an exception when given no stream', ()=>{
+        expect(()=>new LogSummary()).toThrow();
+    });
+
+    it('attempts to get a file stream when given a filename', ()=>{
+        const mockedFs = {
+            createReadStream: sinon.fake.returns(new Readable())
+        };
+
+        RewireAPI.__set__('fs', mockedFs);
+
+        new LogSummary('testFile.txt');
+
+        expect(mockedFs.createReadStream.calledOnceWith('testFile.txt')).toBeTruthy();
+
+        RewireAPI.__ResetDependency__('fs');
+    });
+
+    it('only parses once', async ()=>{
+        const stream = new Readable();
+        stream._read = ()=>{};
+
+        stream.push('72.44.32.10 - - [09/Jul/2018:15:48:20 +0200] "GET /download/counter/ HTTP/1.1" 200 3574 "-" "Mozilla/5.0 (X11; U; Linux x86; en-US) AppleWebKit/534.7 (KHTML, like Gecko) Epiphany/2.30.6 Safari/534.7"' + "\n");
+        stream.push(null);
+
+        const summary = new LogSummary(stream);
+        await summary.parse();
+        await summary.parse();
+    });
+
+    it('returns the same promise during processing', async ()=>{
+        const createInterface = sinon.spy(RewireAPI.__get__('readline'), 'createInterface');
+        const stream = new Readable();
+        stream._read = ()=>{};
+
+        stream.push('72.44.32.10 - - [09/Jul/2018:15:48:20 +0200] "GET /download/counter/ HTTP/1.1" 200 3574 "-" "Mozilla/5.0 (X11; U; Linux x86; en-US) AppleWebKit/534.7 (KHTML, like Gecko) Epiphany/2.30.6 Safari/534.7"' + "\n");
+
+        const summary = new LogSummary(stream);
+        summary.parse();
+        summary.parse();
+
+        expect(createInterface.calledOnce).toBeTruthy();
+
+        stream.push(null);
+
+        expect(createInterface.calledOnce).toBeTruthy();
+
+        createInterface.restore();
     });
 });
