@@ -67,6 +67,12 @@ describe('HashTally', ()=>{
         expect(tally.countKeys()).toBe(4);
     });
 
+    it('returns 0 count for missing keys', ()=>{
+        const tally = new HashTally();
+
+        expect(tally.count('Test Key 1')).toBe(0);
+    });
+
     it('correctly decrements a tally', ()=>{
         const tally = new HashTally();
 
