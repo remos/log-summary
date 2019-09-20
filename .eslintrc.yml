@@ -13,3 +13,4 @@ plugins:
 
 rules:
   linebreak-style: error
+  semi: error

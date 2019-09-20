@@ -4,9 +4,9 @@
   "description": "",
   "bin": "bin/index.js",
   "scripts": {
-    "build": "babel src --ignore **/*.test.js --out-dir bin",
-    "test": "jest src",
-    "install": "babel src --ignore **/*.test.js --out-dir bin"
+    "build": "eslint src && babel src --ignore **/*.test.js --out-dir bin",
+    "test": "jest --coverage src",
+    "install": "eslint src && babel src --ignore **/*.test.js --out-dir bin"
   },
   "author": "",
   "license": "ISC",
