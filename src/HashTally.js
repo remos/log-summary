@@ -8,7 +8,7 @@ export function getTop(map, count) {
     return Object.keys(map)
         .sort(fallbackComparator(
             (a, b)=>map[b] - map[a],
-            (a, b)=>a - b
+            (a, b)=>a.localeCompare(b)
         ))
         .slice(0, count);
 }

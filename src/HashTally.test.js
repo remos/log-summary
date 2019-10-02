@@ -7,8 +7,8 @@ describe('getTop', ()=>{
         const map = {
             a: 0,
             d: 5,
+            e: 2,
             c: 2,
-            e: 2
         };
 
         expect(getTop(map, 3)).toStrictEqual(['d', 'c', 'e']);

@@ -70,8 +70,8 @@ describe('LogSummary', ()=>{
                 ],
                 top3Urls: [
                     '/docs/manage-websites/',
-                    '/intranet-analytics/',
-                    '/this/page/does/not/exist/'
+                    '/',
+                    '/asset.css'
                 ],
             });
     });
