@@ -1,5 +1,5 @@
-module.exports = {
-    plugins: ['babel-plugin-rewire'],
+module.exports = api => ({
+    plugins: api.env('test') ? ['babel-plugin-rewire'] : [],
     presets: [
         ['@babel/preset-env', {
             targets: {
@@ -7,4 +7,4 @@ module.exports = {
             }
         }]
     ]
-};
+});
