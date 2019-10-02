@@ -1,6 +1,20 @@
 import HashTally, {
+    fallbackComparator,
     getTop
 } from './HashTally';
+
+describe('fallbackComparator', ()=>{
+    it('runs the next comparator when one evaluates as equivalent', ()=>{
+        expect([
+            'c', 'z', 'a', 'b'
+        ].sort(fallbackComparator(
+            ()=>0,
+            (a, b)=>a.localeCompare(b)
+        ))).toStrictEqual([
+            'a', 'b', 'c', 'z'
+        ]);
+    });
+});
 
 describe('getTop', ()=>{
     it('gets the top 3 counts of a map', ()=>{
